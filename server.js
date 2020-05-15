@@ -11,7 +11,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.raw({ type: 'text/plain' }));
 
 // Uncomment this out once you've made your first route.
-//app.use(express.static(path.join(__dirname, 'client', 'build')));
+app.use(express.static(path.join(__dirname, 'client', 'build')));
 
 // some helper functions you can use
 const readFile = util.promisify(fs.readFile);
@@ -26,7 +26,7 @@ function slugToPath(slug) {
   return path.join(DATA_DIR, filename);
 }
 function jsonOK(res, data) {
-  res.json({ status: 'ok', data });
+  res.json({ status: 'ok', ...data });
 }
 function jsonError(res, message) {
   res.json({ status: 'error', message });
@@ -47,8 +47,7 @@ app.get('/api/page/:slug', async (req, res) => {
     const slug = req.params.slug;
     const FILE_PATH = slugToPath(slug);
     const data = await readFile(FILE_PATH, 'utf-8');
-    console.log(slug);
-    jsonOK(res, data);
+    res.json({ status: 'ok', body: data });
   } catch (err) {
     jsonError(res, 'Page does not exist.');
   }
@@ -63,11 +62,11 @@ app.post('/api/page/:slug', async (req, res) => {
   try {
     const slug = req.params.slug;
     const FILE_PATH = slugToPath(slug);
-    const body = req.body.toString();
+    const body = req.body.body;
     const data = await writeFile(FILE_PATH, body);
     jsonOK(res, data);
   } catch (err) {
-    jsonError(res, 'Page could not written.');
+    jsonError(res, 'Could not write page.');
   }
 });
 
@@ -76,10 +75,29 @@ app.post('/api/page/:slug', async (req, res) => {
 //  file names do not have .md, just the name!
 // failure response: no failure response
 
+app.get('/api/pages/all', async (req, res) => {
+  const pages = await readDir(DATA_DIR);
+  page = [];
+  pages.forEach((el) => {
+    page.push(el.substring(0, el.length - 3));
+  });
+  jsonOK(res, page);
+});
+
 // GET: '/api/tags/all'
 // success response: {status:'ok', tags: ['tagName', 'otherTagName']}
 //  tags are any word in all documents with a # in front of it
 // failure response: no failure response
+
+// const tagslar = [];
+// data.forEach((file) => {
+//   const tag = readFile(slugToPath(file), 'utf-8');
+//   console.log(tag);
+//var index = tag.indexOf('\n');
+//tagslar.push(tag.substring(0, index));
+//});
+//jsonOK(res, tagslar);
+//});
 
 // GET: '/api/tags/:tag'
 // success response: {status:'ok', tag: 'tagName', pages: ['tagName', 'otherTagName']}
