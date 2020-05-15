@@ -8,9 +8,10 @@ const fs = require('fs');
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+app.use(bodyParser.raw({ type: 'text/plain' }));
 
 // Uncomment this out once you've made your first route.
-// app.use(express.static(path.join(__dirname, 'client', 'build')));
+//app.use(express.static(path.join(__dirname, 'client', 'build')));
 
 // some helper functions you can use
 const readFile = util.promisify(fs.readFile);
@@ -25,7 +26,7 @@ function slugToPath(slug) {
   return path.join(DATA_DIR, filename);
 }
 function jsonOK(res, data) {
-  res.json({ status: 'ok', ...data });
+  res.json({ status: 'ok', data });
 }
 function jsonError(res, message) {
   res.json({ status: 'error', message });
@@ -34,14 +35,41 @@ function jsonError(res, message) {
 // If you want to see the wiki client, run npm install && npm build in the client folder,
 // statically serve /client/build
 
+app.get('/', (req, res) => {
+  res.send('hello world!');
+});
 // GET: '/api/page/:slug'
 // success response: {status: 'ok', body: '<file contents>'}
 // failure response: {status: 'error', message: 'Page does not exist.'}
+
+app.get('/api/page/:slug', async (req, res) => {
+  try {
+    const slug = req.params.slug;
+    const FILE_PATH = slugToPath(slug);
+    const data = await readFile(FILE_PATH, 'utf-8');
+    console.log(slug);
+    jsonOK(res, data);
+  } catch (err) {
+    jsonError(res, 'Page does not exist.');
+  }
+});
 
 // POST: '/api/page/:slug'
 // body: {body: '<file text content>'}
 // success response: {status: 'ok'}
 // failure response: {status: 'error', message: 'Could not write page.'}
+
+app.post('/api/page/:slug', async (req, res) => {
+  try {
+    const slug = req.params.slug;
+    const FILE_PATH = slugToPath(slug);
+    const body = req.body.toString();
+    const data = await writeFile(FILE_PATH, body);
+    jsonOK(res, data);
+  } catch (err) {
+    jsonError(res, 'Page could not written.');
+  }
+});
 
 // GET: '/api/pages/all'
 // success response: {status:'ok', pages: ['fileName', 'otherFileName']}
@@ -61,7 +89,7 @@ function jsonError(res, message) {
 app.get('/api/page/all', async (req, res) => {
   const names = await fs.readdir(DATA_DIR);
   console.log(names);
-  jsonOK(res, { });
+  jsonOK(res, {});
 });
 
 const port = process.env.PORT || 5000;
