@@ -35,9 +35,6 @@ function jsonError(res, message) {
 // If you want to see the wiki client, run npm install && npm build in the client folder,
 // statically serve /client/build
 
-app.get('/', (req, res) => {
-  res.send('hello world!');
-});
 // GET: '/api/page/:slug'
 // success response: {status: 'ok', body: '<file contents>'}
 // failure response: {status: 'error', message: 'Page does not exist.'}
@@ -76,18 +73,40 @@ app.post('/api/page/:slug', async (req, res) => {
 // failure response: no failure response
 
 app.get('/api/pages/all', async (req, res) => {
-  const pages = await readDir(DATA_DIR);
-  page = [];
-  pages.forEach((el) => {
-    page.push(el.substring(0, el.length - 3));
+  const files = await readDir(DATA_DIR);
+  data = [];
+  files.forEach((el) => {
+    data.push(el.substring(0, el.length - 3));
   });
-  jsonOK(res, page);
+  res.json({ status: 'ok', pages: data });
 });
 
 // GET: '/api/tags/all'
 // success response: {status:'ok', tags: ['tagName', 'otherTagName']}
 //  tags are any word in all documents with a # in front of it
 // failure response: no failure response
+
+// app.get('/api/tags/all', async (req, res) => {
+//   const pages = await readDir(DATA_DIR);
+//   let data = [];
+//   for (let file of pages) {
+//     let info = await readFile(path.join(DATA_DIR, file), 'utf-8');
+//     let tag = info.matchAll(TAG_RE);
+//     data = data.push(tag);
+//   }
+//   jsonOK(res, data);
+// });
+
+// app.get('/api/tags/all', async (req, res) => {
+//   try {
+//     const slug = req.params.slug;
+//     const FILE_PATH = slugToPath(slug);
+//     const data = await readFile(FILE_PATH, 'utf-8');
+//     res.json({ status: 'ok', body: data });
+//   } catch (err) {
+//     jsonError(res, 'Page does not exist.');
+//   }
+// });
 
 // const tagslar = [];
 // data.forEach((file) => {
@@ -103,6 +122,8 @@ app.get('/api/pages/all', async (req, res) => {
 // success response: {status:'ok', tag: 'tagName', pages: ['tagName', 'otherTagName']}
 //  file names do not have .md, just the name!
 // failure response: no failure response
+
+app.get('/api/tags/:tag', async (req, res) => {});
 
 app.get('/api/page/all', async (req, res) => {
   const names = await fs.readdir(DATA_DIR);
