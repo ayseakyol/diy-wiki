@@ -86,16 +86,16 @@ app.get('/api/pages/all', async (req, res) => {
 //  tags are any word in all documents with a # in front of it
 // failure response: no failure response
 
-// app.get('/api/tags/all', async (req, res) => {
-//   const pages = await readDir(DATA_DIR);
-//   let data = [];
-//   for (let file of pages) {
-//     let info = await readFile(path.join(DATA_DIR, file), 'utf-8');
-//     let tag = info.matchAll(TAG_RE);
-//     data = data.push(tag);
-//   }
-//   jsonOK(res, data);
-// });
+app.get('/api/tags/all', async (req, res) => {
+  const files = await readDir(DATA_DIR);
+  let result = [];
+  for (let file of files) {
+    let info = await readFile(path.join(DATA_DIR, file), 'utf-8');
+    let tag = info.match(TAG_RE);
+    result.push(tag);
+  }
+  res.json({ status: 'ok', tags: result });
+});
 
 // app.get('/api/tags/all', async (req, res) => {
 //   try {
