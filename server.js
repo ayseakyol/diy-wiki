@@ -97,38 +97,26 @@ app.get('/api/tags/all', async (req, res) => {
   res.json({ status: 'ok', tags: result });
 });
 
-// app.get('/api/tags/all', async (req, res) => {
-//   try {
-//     const slug = req.params.slug;
-//     const FILE_PATH = slugToPath(slug);
-//     const data = await readFile(FILE_PATH, 'utf-8');
-//     res.json({ status: 'ok', body: data });
-//   } catch (err) {
-//     jsonError(res, 'Page does not exist.');
-//   }
-// });
-
-// const tagslar = [];
-// data.forEach((file) => {
-//   const tag = readFile(slugToPath(file), 'utf-8');
-//   console.log(tag);
-//var index = tag.indexOf('\n');
-//tagslar.push(tag.substring(0, index));
-//});
-//jsonOK(res, tagslar);
-//});
-
 // GET: '/api/tags/:tag'
 // success response: {status:'ok', tag: 'tagName', pages: ['tagName', 'otherTagName']}
 //  file names do not have .md, just the name!
 // failure response: no failure response
 
-app.get('/api/tags/:tag', async (req, res) => {});
+// app.get('/api/tags/:tag', async (req, res) => {
+//   const tag = req.params.tag;
+//   const FILE_PATH = slugToPath(tag);
+//   const data = await readFile(FILE_PATH, 'utf-8');
+//   let result = [];
+//   // for (let file of files) {
+//   //    let info = await readFile(path.join(DATA_DIR, file), 'utf-8');
+//   let tag = data.match(TAG_RE);
+//   result.push(tag);
 
-app.get('/api/page/all', async (req, res) => {
-  const names = await fs.readdir(DATA_DIR);
-  console.log(names);
-  jsonOK(res, {});
+//   res.json({ status: 'ok', tags: tag, pages: tag });
+// });
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
 });
 
 const port = process.env.PORT || 5000;
