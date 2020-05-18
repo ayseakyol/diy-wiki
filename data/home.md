@@ -1,6 +1,12 @@
-This is your own wiki.
-This is how you change stuff!!
-Here's the [about](about) page.
-#home
+# Your New Page
+
+Write whatever you like here.
+
+why
+
+#add
+
+
+#new
+
 #default
-[new file](new-file)

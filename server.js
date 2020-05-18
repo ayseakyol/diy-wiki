@@ -74,11 +74,8 @@ app.post('/api/page/:slug', async (req, res) => {
 
 app.get('/api/pages/all', async (req, res) => {
   const files = await readDir(DATA_DIR);
-  data = [];
-  files.forEach((el) => {
-    data.push(el.substring(0, el.length - 3));
-  });
-  res.json({ status: 'ok', pages: data });
+  const fileName = files.map((name) => name.substr(0, name.length - 3));
+  res.json({ status: 'ok', pages: fileName });
 });
 
 // GET: '/api/tags/all'
@@ -88,13 +85,26 @@ app.get('/api/pages/all', async (req, res) => {
 
 app.get('/api/tags/all', async (req, res) => {
   const files = await readDir(DATA_DIR);
-  let result = [];
+  let tags = [];
   for (let file of files) {
-    let info = await readFile(path.join(DATA_DIR, file), 'utf-8');
-    let tag = info.match(TAG_RE);
-    result.push(tag);
+    const FILE_PATH = path.join(DATA_DIR, file);
+    const content = await readFile(FILE_PATH, 'utf-8');
+    const tag = content.match(TAG_RE);
+
+    if (tags.includes(tag)) {
+      break;
+    } else {
+      tags = tags.concat(tag);
+    }
   }
-  res.json({ status: 'ok', tags: result });
+  const list = [];
+  tags.forEach((el) => {
+    el = el.substr(1);
+    if (!list.includes(el)) {
+      list.push(el);
+    }
+  });
+  res.json({ status: 'ok', tags: list });
 });
 
 // GET: '/api/tags/:tag'
@@ -102,18 +112,20 @@ app.get('/api/tags/all', async (req, res) => {
 //  file names do not have .md, just the name!
 // failure response: no failure response
 
-// app.get('/api/tags/:tag', async (req, res) => {
-//   const tag = req.params.tag;
-//   const FILE_PATH = slugToPath(tag);
-//   const data = await readFile(FILE_PATH, 'utf-8');
-//   let result = [];
-//   // for (let file of files) {
-//   //    let info = await readFile(path.join(DATA_DIR, file), 'utf-8');
-//   let tag = data.match(TAG_RE);
-//   result.push(tag);
-
-//   res.json({ status: 'ok', tags: tag, pages: tag });
-// });
+app.get('/api/tags/:tag', async (req, res) => {
+  const tag = req.params.tag;
+  const files = await readDir(DATA_DIR);
+  const list = [];
+  for (let file of files) {
+    const FILE_PATH = path.join(DATA_DIR, file);
+    const content = await readFile(FILE_PATH, 'utf-8');
+    if (content.includes(tag)) {
+      file = file.substr(0, file.length - 3);
+      list.push(file);
+    }
+  }
+  jsonOK(res, { tag: tag, pages: list });
+});
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
